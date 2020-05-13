@@ -1,3 +1,38 @@
+# Plan-for-the-change-of-KANN
+
+This repository is for the change of KANN code and this is the plan of change.
+
+跑CNN，得到的相关的函数：
+kann_layer_conv2d<br>
+kad_max2d<br>
+kann_layer_dropout<br>
+kann_layer_dense<br>
+kann_layer_cost<br>
+kann_train_fnn1<br>
+
+kautodiff.c里需要修改的函数：
+
+kad_saxpy_inlined 参数应修改为Ciphertext
+kad_vec_mul_sum 参数应修改为Ciphertext
+
+kad_max2d : conv2d_gen_aux（不需修改）
+
+conv2d_move_1to3：参数应修改为Ciphertext
+
+conv2d_add_3to1:  参数应修改为Ciphertextkad_op_conv2d 
+
+kad_op_conv2d : 里面的中间变量需要修改，很多都是float
+conv2d_loop1
+conv2d_loop2 都需要修改
+
+conv1d_move_1to2：参数应修改为Ciphertext
+
+conv1d_add_2to1:  参数应修改为Ciphertextkad_op_conv2d 
+
+kad_op_conv1d : 里面的中间变量需要修改，很多都是float
+conv1d_loop1
+conv1d_loop2 都需要修改
+
 ## Getting Started
 ```sh
 # acquire source code and compile
