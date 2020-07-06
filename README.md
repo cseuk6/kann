@@ -14,13 +14,22 @@ kautodiff.c里需要修改的函数：
 
 =============================
 //下述计算函数均需要修改，使之可以用于密态运算
-/* operators taking two operands */
-kad_node_t *kad_add(kad_node_t *x, kad_node_t *y); /* f(x,y) = x + y (generalized element-wise addition; f[i*n+j]=x[i*n+j]+y[j], n=kad_len(y), 0<j<n, 0<i<kad_len(x)/n) */
-kad_node_t *kad_sub(kad_node_t *x, kad_node_t *y); /* f(x,y) = x - y (generalized element-wise subtraction) */
-kad_node_t *kad_mul(kad_node_t *x, kad_node_t *y); /* f(x,y) = x * y (generalized element-wise product) */
+/* operators taking two operands */<br>
 
-kad_node_t *kad_matmul(kad_node_t *x, kad_node_t *y);     /* f(x,y) = x * y   (general matrix product) */
-kad_node_t *kad_cmul(kad_node_t *x, kad_node_t *y);       /* f(x,y) = x * y^T (column-wise matrix product; i.e. y is transposed) */
+kad_node_t *kad_add(kad_node_t *x, kad_node_t *y); /* f(x,y) = x + y <br>
+
+kad_node_t *kad_sub(kad_node_t *x, kad_node_t *y); /* f(x,y) = x - y (generalized element-wise subtraction) */<br>
+
+kad_node_t *kad_mul(kad_node_t *x, kad_node_t *y); /* f(x,y) = x * y (generalized element-wise product) */<br>
+
+
+kad_node_t *kad_matmul(kad_node_t *x, kad_node_t *y);     /* f(x,y) = x * y   (general matrix product) */<br>
+
+kad_node_t *kad_cmul(kad_node_t *x, kad_node_t *y);       /* f(x,y) = x * y^T (column-wise matrix product; i.e. y is transposed) */<br>
+
+
+const float *kad_eval_at(int n, kad_node_t **a, int from); <br>
+
 =============================
 
 kad_saxpy_inlined 参数应修改为Ciphertext
