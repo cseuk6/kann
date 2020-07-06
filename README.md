@@ -28,7 +28,11 @@ kad_node_t *kad_matmul(kad_node_t *x, kad_node_t *y);     /* f(x,y) = x * y   (g
 kad_node_t *kad_cmul(kad_node_t *x, kad_node_t *y);       /* f(x,y) = x * y^T (column-wise matrix product; i.e. y is transposed) */<br>
 
 
-const float *kad_eval_at(int n, kad_node_t **a, int from); <br>
+const float *kad_eval_at(int n, kad_node_t **a, int from); //返回一个节点的值 <br>
+
+void kad_grad(int n, kad_node_t **a, int from) //里面涉及到梯度变量g的都需要修改
+
+
 
 =============================
 
