@@ -10,6 +10,15 @@ kann_layer_dense<br>
 kann_layer_cost<br>
 kann_train_fnn1<br>
 
+kautodiff.c里需要修改的结构<br><br>
+
+typedef struct kad_node_t {
+
+	float      *x;              /* value; allocated for internal nodes *///需要改成加密类型
+	
+	float      *g;              /* gradient; allocated for internal nodes */
+}
+
 kautodiff.c里需要修改的函数：
 
 =============================
@@ -27,7 +36,7 @@ kad_node_t *kad_matmul(kad_node_t *x, kad_node_t *y);     /* f(x,y) = x * y   (g
 
 kad_node_t *kad_cmul(kad_node_t *x, kad_node_t *y);       /* f(x,y) = x * y^T (column-wise matrix product; i.e. y is transposed) */<br>
 
- //下述函数里面涉及到梯度变量g和变量x的都需要修改
+ //下述函数里面涉及到梯度变量g和变量x的都需要修改 <br>
  
 const float *kad_eval_at(int n, kad_node_t **a, int from); //返回一个节点的值 <br>
 
@@ -37,7 +46,124 @@ static inline kad_node_t *kad_dup1(const kad_node_t *p) <br>
 
 kad_node_t **kad_clone(int n, kad_node_t **v, int batch_size) <br>
 
-=============================
+//下述计算函数均需要修改<br><br>
+
+static inline float kad_sdot(int n, const float *x, const float *y) /* BLAS sdot using SSE */<br><br>
+static inline void kad_saxpy_inlined(int n, float a, const float *x, float *y) /* BLAS saxpy using SSE */<br><br>
+static inline float kad_sdot(int n, const float *x, const float *y) /* BLAS sdot */<br><br>
+static inline void kad_saxpy_inlined(int n, float a, const float *x, float *y) // BLAS saxpy<br><br>
+
+void kad_vec_mul_sum(int n, float *a, const float *b, const float *c)<br><br>
+
+void kad_saxpy(int n, float a, const float *x, float *y)<br><br>
+
+//下面两个函数在define HAVE_CBLAS 之后需要修改<br><br>
+void kad_sgemm_simple(int trans_A, int trans_B, int M, int N, int K, const float *A, const float *B, float *C)<br><br>
+
+void kad_sgemm_simple(int trans_A, int trans_B, int M, int N, int K, const float *A, const float *B, float *C)<br><br>
+
+注意<br>
+/***************************<br>
+ * Random number generator *<br>
+ ***************************/<br>
+ 
+下述为算术操作的函数，里面涉及了x和梯度变量g<br>
+
+int kad_op_add(kad_node_t *p, int action)<br><br>
+
+int kad_op_sub(kad_node_t *p, int action)<br><br>
+
+int kad_op_mul(kad_node_t *p, int action)<br><br>
+
+int kad_op_cmul(kad_node_t *p, int action)<br><br>
+
+int kad_op_matmul(kad_node_t *p, int action)<br><br>
+
+int kad_op_square(kad_node_t *p, int action)<br><br>
+
+int kad_op_exp(kad_node_t *p, int action)<br><br>
+
+int kad_op_log(kad_node_t *p, int action)//里面有除法<br><br>
+
+int kad_op_reduce_sum(kad_node_t *p, int action)<br><br>
+
+int kad_op_reduce_mean(kad_node_t *p, int action)<br><br>
+
+/********** Miscellaneous **********/<br><br>
+
+int kad_op_dropout(kad_node_t *p, int action)<br><br>
+
+int kad_op_sample_normal(kad_node_t *p, int action) /* not tested */<br><br>
+
+int kad_op_slice(kad_node_t *p, int action)<br><br>
+
+int kad_op_concat(kad_node_t *p, int action)<br><br>
+
+int kad_op_reshape(kad_node_t *p, int action)<br><br>
+
+int kad_op_reverse(kad_node_t *p, int action)<br><br>
+
+
+/********** Cost functions **********/<br><br>
+
+int kad_op_mse(kad_node_t *p, int action)<br><br>
+
+int kad_op_ce_bin(kad_node_t *p, int action)<br><br>
+
+int kad_op_ce_bin_neg(kad_node_t *p, int action)<br><br>
+
+int kad_op_ce_multi(kad_node_t *p, int action)
+<br><br>
+/********** Normalization **********/<br><br>
+
+int kad_op_stdnorm(kad_node_t *p, int action)<br><br>
+
+/********** Activation functions **********/<br><br>
+
+int kad_op_sigm(kad_node_t *p, int action)<br><br>
+
+int kad_op_tanh(kad_node_t *p, int action)<br><br>
+
+int kad_op_relu(kad_node_t *p, int action)<br><br>
+
+int kad_op_sin(kad_node_t *p, int action)<br><br>
+
+int kad_op_softmax(kad_node_t *p, int action)<br><br>
+
+/********** Multi-node pooling **********/<br><br>
+
+int kad_op_avg(kad_node_t *p, int action)<br><br>
+
+int kad_op_max(kad_node_t *p, int action)<br><br>
+
+int kad_op_stack(kad_node_t *p, int action) /* TODO: allow axis, as in TensorFlow */<br><br>
+
+int kad_op_select(kad_node_t *p, int action)<br><br>
+
+/********** 2D convolution **********/<br><br>
+
+static void conv_rot180(int d0, int d1, float *x) /* rotate/reverse a weight martix */<br><br>
+
+static void conv2d_move_1to3(int d[4], const float *x, float *y) /* convert the NCHW shape to the NHWC shape */<br><br>
+
+static void conv2d_add_3to1(int d[4], const float *y, float *x) /* convert the NHWC shape back to NCHW and add to another NCHW-shaped array */<br><br>
+
+int kad_op_conv2d(kad_node_t *p, int action) /* in the number-channel-height-width (NCHW) shape */<br><br>
+
+int kad_op_max2d(kad_node_t *p, int action)<br><br>
+
+static void conv1d_move_1to2(int d[3], const float *x, float *y)<br><br>
+
+static void conv1d_add_2to1(int d[3], const float *y, float *x)<br><br>
+
+int kad_op_conv1d(kad_node_t *p, int action) /* in the number-channel-width (NCW) shape */<br><br>
+
+int kad_op_max1d(kad_node_t *p, int action)<br><br>
+
+int kad_op_avg1d(kad_node_t *p, int action)<br><br>
+
+
+=============================<br><br>
 
 kad_saxpy_inlined 参数应修改为Ciphertext
 kad_vec_mul_sum 参数应修改为Ciphertext
